@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.*;
 
@@ -21,8 +22,11 @@ public class CSVController
     @PostMapping(path = "/csvToJson")
     public String csvtoJSON(@RequestParam("file") MultipartFile aInCsvFile) throws IOException {
         try {
+
             CsvSchema csv = CsvSchema.emptySchema().withHeader();
             CsvMapper csvMapper = new CsvMapper();
+            csvMapper.enable(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE);
+            csvMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             MappingIterator<Map<?, ?>> mappingIterator = csvMapper.reader().forType(Map.class).with(csv).readValues(convert(aInCsvFile));
             List<Map<?, ?>> list = mappingIterator.readAll();
             String json = new Gson().toJson(list);
